@@ -27,7 +27,6 @@ program
     "./mindmap-output",
   )
   .action(async (options: { source: string; output: string }) => {
-    console.log("options:::", options);
     try {
       const srcDir = path.resolve(options.source);
       const outputDir = path.resolve(options.output);
@@ -44,15 +43,8 @@ program
       const outputHtmlPath = path.join(outputDir, "index.html");
       await fs.copyFile(templatePath, outputHtmlPath);
 
-      console.log(
-        "Mindmap generated at:",
-        path.join(outputDir, "mindmap.json"),
-      );
-      // console.log("Visualization page generated at:", outputHtmlPath);
-
       startServer(outputDir);
     } catch (err: any) {
-      console.error("Error:", err.message);
       process.exit(1);
     }
   });

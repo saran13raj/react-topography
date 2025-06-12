@@ -99,7 +99,6 @@ export default async function generateMindmap(
   const files = globSync(`${srcDir}/**/*.{js,jsx,ts,tsx}`);
   const componentMap = new Map<string, ComponentInfo>();
   let appFile: string | null = null;
-  console.log("files:::", files);
   for (const file of files) {
     const { filePath, components, usedComponents, routes } =
       await parseFile(file);
