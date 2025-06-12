@@ -20,12 +20,51 @@
         background: #f9fafb;
         position: relative;
       }
+      .node-title {
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 8px;
+        text-align: center;
+        width: 100%;
+      }
+
+      .node-section {
+        margin-top: 8px;
+        width: 100%;
+      }
+
+      .section-label {
+        font-weight: bold;
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 4px;
+      }
+
+      .section-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .section-content span {
+        background: #f0f0f0;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #333;
+      }
+
+      .flex-col {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
       .drawflow .drawflow-node {
         background: #fff;
         border: 2px solid #333;
         border-radius: 8px;
         width: fit-content;
-        height: 0.2rem;
+        height: auto;
         min-height: 0.2rem;
         display: flex;
         align-items: center;
@@ -65,6 +104,7 @@
       // Layout constants
       const NODE_WIDTH = 140;
       const NODE_HEIGHT = 40;
+      const ITEM_HEIGHT = 24;
       const X_GAP = 100;
       const Y_GAP = 40;
 
@@ -83,11 +123,24 @@
       // Recursive layout and node creation
       function layoutTree(node, x, y, nodes = [], edges = [], parentId = null) {
         const nodeId = nodes.length;
+
+        // Calculate dynamic height based on uses and props
+        const usesCount = node.uses ? node.uses.length : 0;
+        const propsCount = node.props ? node.props.length : 0;
+        const extraItems = usesCount + propsCount;
+        const extraHeight = extraItems * ITEM_HEIGHT; // Height for uses and props
+        const sectionHeight =
+          (usesCount > 0 ? 20 : 0) + (propsCount > 0 ? 20 : 0); // Height for section labels
+        const totalHeight = NODE_HEIGHT + extraHeight + sectionHeight;
+
         nodes.push({
           id: nodeId,
           name: node.name,
           x,
           y,
+          uses: node.uses,
+          props: node.props,
+          height: totalHeight,
         });
         if (parentId !== null) {
           edges.push({
@@ -97,7 +150,7 @@
         }
         let childY = y;
         node.children.forEach((child) => {
-          layoutTree(
+          const childLayout = layoutTree(
             child,
             x + NODE_WIDTH + X_GAP,
             childY,
@@ -105,7 +158,9 @@
             edges,
             nodeId,
           );
-          childY += NODE_HEIGHT + Y_GAP;
+          const childHeight =
+            childLayout.nodes[childLayout.nodes.length - 1].height;
+          childY += childHeight + Y_GAP; // Use the child's total height for y positioning
         });
         return { nodes, edges };
       }
@@ -124,7 +179,31 @@
             node.y,
             "",
             { name: node.name },
-            `<div>${node.name}</div>`,
+            `<div>
+     <div class="node-title">${node.name}</div>
+     ${
+       node.uses && node.uses.length
+         ? `
+       <div class="node-section">
+         <div class="section-label">Imports</div>
+         <div class="section-content flex-col">
+           ${node.uses.map((use) => `<span>${use}</span>`).join("")}
+         </div>
+       </div>`
+         : ""
+     }
+     ${
+       node.props && node.props.length
+         ? `
+       <div class="node-section">
+         <div class="section-label">Props</div>
+         <div class="section-content flex-col">
+           ${node.props.map((prop) => `<span>${prop}</span>`).join("")}
+         </div>
+       </div>`
+         : ""
+     }
+   </div>`,
           );
         });
 
