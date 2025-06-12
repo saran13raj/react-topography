@@ -9,7 +9,7 @@ import startServer from "./server";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// npx tsx src/cli.ts -s ./test/src -o ./out
+// npx tsx src/cli.ts -s ./test/src
 
 const program = new Command();
 
@@ -21,15 +21,10 @@ program
     "Source directory of the React codebase",
     "./src",
   )
-  .option(
-    "-o, --output <path>",
-    "Output directory for generated files",
-    "./topography-output",
-  )
   .action(async (options: { source: string; output: string }) => {
+    const outputDir = path.resolve("dist/react-topography");
     try {
       const srcDir = path.resolve(options.source);
-      const outputDir = path.resolve(options.output);
 
       await fs.mkdir(outputDir, { recursive: true });
 

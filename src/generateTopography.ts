@@ -125,7 +125,7 @@ export default async function generateTopography(
   for (const file of files) {
     const { filePath, components, usedComponents, routes } =
       await parseFile(file);
-    if (filePath.includes("App.") || filePath.includes("app.")) {
+    if (filePath.toLowerCase().includes("app.")) {
       appFile = filePath;
     }
     components.forEach((comp) => {

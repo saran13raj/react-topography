@@ -32,7 +32,7 @@
         width: 48px;
         height: 48px;
       }
-      #topography-conTopography{
+      #topography-container {
         width: 100vw;
         height: 100vh;
         background: #e8e8e8;
@@ -168,7 +168,7 @@
           ></path></svg
       ></a>
     </header>
-    <div id="topography-contTopography</div>
+    <div id="topography-container"></div>
     <div class="bar-zoom">
       <svg
         class="zoom-icon"
@@ -243,7 +243,7 @@
         });
 
       // Initialize Drawflow
-      const container = document.getElementById("topography-contTopography;
+      const container = document.getElementById("topography-container");
       const editor = new Drawflow(container);
       editor.reroute = true;
       editor.start();
@@ -376,7 +376,7 @@
       isProgrammaticConnection = false;
 
       // Fetch and render toTopographyy
-      fetch("/topography.json)
+      fetch("/topography.json")
         .then((res) => res.json())
         .then((data) => {
           renderTopography(data);
