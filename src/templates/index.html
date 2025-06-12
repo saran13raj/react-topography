@@ -19,6 +19,7 @@
         height: 100vh;
         background: #f9fafb;
         position: relative;
+        cursor: grab;
       }
       .node-title {
         font-weight: bold;
@@ -64,6 +65,28 @@
         flex-direction: column;
         align-items: flex-start;
       }
+      .bar-zoom {
+        float: right;
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        display: flex;
+        font-size: 24px;
+        color: white;
+        padding: 5px 10px;
+        background: #555555;
+        border-radius: 4px;
+        border-right: 1px solid var(--border-color);
+        z-index: 5;
+      }
+
+      .zoom-icon {
+        width: 1em;
+        height: 1em;
+        cursor: pointer;
+        display: inline-block;
+      }
+
       .drawflow .drawflow-node {
         background: #fff;
         border: 1px solid #333;
@@ -107,6 +130,53 @@
   </head>
   <body>
     <div id="mindmap-container"></div>
+    <div class="bar-zoom">
+      <svg
+        class="zoom-icon"
+        id="zoom-out"
+        aria-hidden="true"
+        focusable="false"
+        role="img"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 512 512"
+        data-fa-i2svg=""
+      >
+        <path
+          fill="currentColor"
+          d="M304 192v32c0 6.6-5.4 12-12 12H124c-6.6 0-12-5.4-12-12v-32c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12zm201 284.7L476.7 505c-9.4 9.4-24.6 9.4-33.9 0L343 405.3c-4.5-4.5-7-10.6-7-17V372c-35.3 27.6-79.7 44-128 44C93.1 416 0 322.9 0 208S93.1 0 208 0s208 93.1 208 208c0 48.3-16.4 92.7-44 128h16.3c6.4 0 12.5 2.5 17 7l99.7 99.7c9.3 9.4 9.3 24.6 0 34zM344 208c0-75.2-60.8-136-136-136S72 132.8 72 208s60.8 136 136 136 136-60.8 136-136z"
+        ></path>
+      </svg>
+      <svg
+        class="zoom-icon"
+        id="zoom-reset"
+        aria-hidden="true"
+        focusable="false"
+        role="img"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 512 512"
+        data-fa-i2svg=""
+      >
+        <path
+          fill="currentColor"
+          d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"
+        ></path>
+      </svg>
+      <svg
+        class="zoom-icon"
+        id="zoom-in"
+        aria-hidden="true"
+        focusable="false"
+        role="img"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 512 512"
+        data-fa-i2svg=""
+      >
+        <path
+          fill="currentColor"
+          d="M304 192v32c0 6.6-5.4 12-12 12h-56v56c0 6.6-5.4 12-12 12h-32c-6.6 0-12-5.4-12-12v-56h-56c-6.6 0-12-5.4-12-12v-32c0-6.6 5.4-12 12-12h56v-56c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v56h56c6.6 0 12 5.4 12 12zm201 284.7L476.7 505c-9.4 9.4-24.6 9.4-33.9 0L343 405.3c-4.5-4.5-7-10.6-7-17V372c-35.3 27.6-79.7 44-128 44C93.1 416 0 322.9 0 208S93.1 0 208 0s208 93.1 208 208c0 48.3-16.4 92.7-44 128h16.3c6.4 0 12.5 2.5 17 7l99.7 99.7c9.3 9.4 9.3 24.6 0 34zM344 208c0-75.2-60.8-136-136-136S72 132.8 72 208s60.8 136 136 136 136-60.8 136-136z"
+        ></path>
+      </svg>
+    </div>
     <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.js"></script>
     <script>
       // Layout constants
@@ -116,6 +186,22 @@
       const X_GAP = 100;
       const Y_GAP = 40;
       let isProgrammaticConnection = false;
+
+      document.getElementById("zoom-in").addEventListener("click", function () {
+        editor.zoom_in();
+      });
+
+      document
+        .getElementById("zoom-out")
+        .addEventListener("click", function () {
+          editor.zoom_out();
+        });
+
+      document
+        .getElementById("zoom-reset")
+        .addEventListener("click", function () {
+          editor.zoom_reset();
+        });
 
       // Initialize Drawflow
       const container = document.getElementById("mindmap-container");
@@ -247,6 +333,7 @@
           );
         });
       }
+
       isProgrammaticConnection = false;
 
       // Fetch and render mindmap
@@ -255,6 +342,7 @@
         .then((data) => {
           renderMindmap(data);
         });
+      isProgrammaticConnection = false;
     </script>
   </body>
 </html>
