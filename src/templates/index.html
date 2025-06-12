@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Component Mindmap (Vanilla JS)</title>
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #mindmap-container {
+        width: 100vw;
+        height: 100vh;
+        background: #f9fafb;
+        overflow: auto;
+        position: relative;
+      }
+      .node-box {
+        fill: #fff;
+        stroke: #333;
+        stroke-width: 2;
+        rx: 8;
+        ry: 8;
+      }
+      .node-label {
+        font-family: sans-serif;
+        font-size: 16px;
+        fill: #222;
+        pointer-events: none;
+      }
+      .edge {
+        stroke: #888;
+        stroke-width: 2;
+        marker-end: url(#arrowhead);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="mindmap-container"></div>
+    <script>
+      // Layout constants
+      const NODE_WIDTH = 140;
+      const NODE_HEIGHT = 40;
+      const X_GAP = 60;
+      const Y_GAP = 40;
+
+      // Recursive layout and rendering
+      function layoutTree(node, x, y, nodes = [], edges = [], parent = null) {
+        const nodeId = nodes.length;
+        nodes.push({
+          id: nodeId,
+          name: node.name,
+          x,
+          y,
+        });
+        if (parent !== null) {
+          edges.push({
+            from: parent,
+            to: nodeId,
+          });
+        }
+        let childY = y;
+        node.children.forEach((child) => {
+          layoutTree(
+            child,
+            x + NODE_WIDTH + X_GAP,
+            childY,
+            nodes,
+            edges,
+            nodeId,
+          );
+          // Stack children vertically
+          childY += NODE_HEIGHT + Y_GAP;
+        });
+        return { nodes, edges };
+      }
+
+      function renderMindmap(data) {
+        // Compute layout
+        const { nodes, edges } = layoutTree(data, 40, 40);
+
+        // Compute SVG size
+        const maxX = Math.max(...nodes.map((n) => n.x)) + NODE_WIDTH + 40;
+        const maxY = Math.max(...nodes.map((n) => n.y)) + NODE_HEIGHT + 40;
+
+        // SVG
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNS, "svg");
+        svg.setAttribute("width", maxX);
+        svg.setAttribute("height", maxY);
+
+        // Arrowhead marker
+        const defs = document.createElementNS(svgNS, "defs");
+        defs.innerHTML = `
+          <marker id="arrowhead" markerWidth="10" markerHeight="7"
+            refX="10" refY="3.5" orient="auto" markerUnits="strokeWidth">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#888"/>
+          </marker>
+        `;
+        svg.appendChild(defs);
+
+        // Draw edges
+        edges.forEach((edge) => {
+          const from = nodes[edge.from];
+          const to = nodes[edge.to];
+          const line = document.createElementNS(svgNS, "line");
+          line.setAttribute("x1", from.x + NODE_WIDTH);
+          line.setAttribute("y1", from.y + NODE_HEIGHT / 2);
+          line.setAttribute("x2", to.x);
+          line.setAttribute("y2", to.y + NODE_HEIGHT / 2);
+          line.setAttribute("class", "edge");
+          svg.appendChild(line);
+        });
+
+        // Draw nodes
+        nodes.forEach((node) => {
+          // Box
+          const rect = document.createElementNS(svgNS, "rect");
+          rect.setAttribute("x", node.x);
+          rect.setAttribute("y", node.y);
+          rect.setAttribute("width", NODE_WIDTH);
+          rect.setAttribute("height", NODE_HEIGHT);
+          rect.setAttribute("class", "node-box");
+          svg.appendChild(rect);
+
+          // Label
+          const text = document.createElementNS(svgNS, "text");
+          text.setAttribute("x", node.x + NODE_WIDTH / 2);
+          text.setAttribute("y", node.y + NODE_HEIGHT / 2 + 6);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("class", "node-label");
+          text.textContent = node.name;
+          svg.appendChild(text);
+        });
+
+        return svg;
+      }
+
+      // Fetch and render mindmap
+      fetch("/mindmap.json")
+        .then((res) => res.json())
+        .then((data) => {
+          const container = document.getElementById("mindmap-container");
+          container.innerHTML = "";
+          container.appendChild(renderMindmap(data));
+        });
+    </script>
+  </body>
+</html>
