@@ -3,7 +3,7 @@ import * as path from "path";
 import { Command } from "commander";
 import { fileURLToPath } from "url";
 
-import generateMindmap from "./generateMindmap";
+import generateTopography from "./generateTopography";
 import startServer from "./server";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -15,7 +15,7 @@ const program = new Command();
 
 program
   .version("1.0.0")
-  .description("Generate a mindmap of a React codebase")
+  .description("Generate a topography of a React codebase")
   .option(
     "-s, --source <path>",
     "Source directory of the React codebase",
@@ -24,7 +24,7 @@ program
   .option(
     "-o, --output <path>",
     "Output directory for generated files",
-    "./mindmap-output",
+    "./topography-output",
   )
   .action(async (options: { source: string; output: string }) => {
     try {
@@ -33,10 +33,10 @@ program
 
       await fs.mkdir(outputDir, { recursive: true });
 
-      const mindmap = await generateMindmap(srcDir);
+      const topography = await generateTopography(srcDir);
       await fs.writeFile(
-        path.join(outputDir, "mindmap.json"),
-        JSON.stringify(mindmap, null, 2),
+        path.join(outputDir, "topography.json"),
+        JSON.stringify(topography, null, 2),
       );
 
       const templatePath = path.join(__dirname, "./templates/index.html");

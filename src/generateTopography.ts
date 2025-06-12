@@ -15,9 +15,9 @@ interface ComponentInfo {
   props: string[];
 }
 
-interface MindmapNode {
+interface TopographyNode {
   name: string;
-  children: MindmapNode[];
+  children: TopographyNode[];
   file: string | null;
   uses: string[];
   props: string[];
@@ -115,9 +115,9 @@ async function parseFile(filePath: string): Promise<FileParseResult> {
   };
 }
 
-export default async function generateMindmap(
+export default async function generateTopography(
   srcDir: string,
-): Promise<MindmapNode> {
+): Promise<TopographyNode> {
   const files = globSync(`${srcDir}/**/*.{js,jsx,ts,tsx}`);
   const componentMap = new Map<string, ComponentInfo>();
   let appFile: string | null = null;
@@ -138,7 +138,7 @@ export default async function generateMindmap(
     });
   }
 
-  const mindmap: MindmapNode = {
+  const topography: TopographyNode = {
     name: "App",
     children: [],
     file: appFile,
@@ -147,7 +147,7 @@ export default async function generateMindmap(
   };
   const visited = new Set<string>();
 
-  function buildTree(nodeName: string, parentNode: MindmapNode) {
+  function buildTree(nodeName: string, parentNode: TopographyNode) {
     if (visited.has(nodeName)) return;
     visited.add(nodeName);
 
@@ -155,7 +155,7 @@ export default async function generateMindmap(
     if (!componentInfo) return;
 
     componentInfo.routes.forEach((route) => {
-      const routeNode: MindmapNode = {
+      const routeNode: TopographyNode = {
         name: `Route: ${route.path}`,
         children: [],
         file: componentInfo.definedIn,
@@ -168,7 +168,7 @@ export default async function generateMindmap(
 
     componentInfo.uses.forEach((comp) => {
       if (componentMap.has(comp) && comp !== nodeName) {
-        const childNode: MindmapNode = {
+        const childNode: TopographyNode = {
           name: comp,
           children: [],
           file: componentMap.get(comp)!.definedIn,
@@ -182,8 +182,8 @@ export default async function generateMindmap(
   }
 
   if (componentMap.has("App")) {
-    buildTree("App", mindmap);
+    buildTree("App", topography);
   }
 
-  return mindmap;
+  return topography;
 }
