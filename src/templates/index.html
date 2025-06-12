@@ -120,6 +120,10 @@
         color: #222;
         padding: 0;
       }
+      .drawflow .drawflow-node .inputs,
+      .drawflow .drawflow-node .outputs {
+        pointer-events: none;
+      }
       .drawflow .drawflow-node .input {
         left: -7px;
         background: #56dfcf;
@@ -224,7 +228,6 @@
       const ITEM_HEIGHT = 24;
       const X_GAP = 100;
       const Y_GAP = 40;
-      let isProgrammaticConnection = false;
 
       document.getElementById("zoom-in").addEventListener("click", function () {
         editor.zoom_in();
@@ -253,25 +256,6 @@
       editor.zoom_min = 0.5;
 
       editor.editor_mode = "edit";
-
-      // Block user-initiated connections
-      editor.on("connectionStart", function () {
-        if (!isProgrammaticConnection) {
-          editor.connection_cancel(true); // Cancel user-initiated connections
-        }
-      });
-
-      editor.on("connectionCreated", function (connection) {
-        if (!isProgrammaticConnection) {
-          // Remove user-initiated connections
-          editor.removeSingleConnection(
-            connection.node_out,
-            connection.node_in,
-            connection.output,
-            connection.input,
-          );
-        }
-      });
 
       // Recursive layout and node creation
       function layoutTree(node, x, y, nodes = [], edges = [], parentId = null) {
@@ -360,8 +344,6 @@
           );
         });
 
-        isProgrammaticConnection = true;
-
         // Add connections
         edges.forEach((edge) => {
           editor.addConnection(
@@ -373,15 +355,12 @@
         });
       }
 
-      isProgrammaticConnection = false;
-
       // Fetch and render toTopographyy
       fetch("/topography.json")
         .then((res) => res.json())
         .then((data) => {
           renderTopography(data);
         });
-      isProgrammaticConnection = false;
     </script>
   </body>
 </html>

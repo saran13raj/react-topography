@@ -61,7 +61,7 @@ async function parseFile(filePath: string): Promise<FileParseResult> {
         ) {
           const props =
             node.init.params[0]?.properties?.map(
-              (prop: any) => prop.key.name,
+              (prop: any) => prop?.key?.name,
             ) || [];
           components.push({ name: node.id.name, props });
         }
@@ -75,7 +75,7 @@ async function parseFile(filePath: string): Promise<FileParseResult> {
           );
           if (constructor?.value?.params[0]?.properties) {
             props = constructor.value.params[0].properties.map(
-              (prop: any) => prop.key.name,
+              (prop: any) => prop?.key?.name,
             );
           }
           components.push({ name: node.id.name, props });
