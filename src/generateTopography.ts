@@ -120,13 +120,14 @@ export default async function generateTopography(
 ): Promise<TopographyNode> {
   const files = globSync(`${srcDir}/**/*.{js,jsx,ts,tsx}`);
   const componentMap = new Map<string, ComponentInfo>();
-  let appFile: string | null = null;
+  let mainFile: string | null = null;
 
   for (const file of files) {
     const { filePath, components, usedComponents, routes } =
       await parseFile(file);
-    if (filePath.toLowerCase().includes("app.")) {
-      appFile = filePath;
+    // console.log("parse:::", filePath, components, usedComponents);
+    if (filePath.toLowerCase().includes("main.")) {
+      mainFile = filePath;
     }
     components.forEach((comp) => {
       componentMap.set(comp.name, {
@@ -137,24 +138,46 @@ export default async function generateTopography(
       });
     });
   }
+  console.log("compMap:::", componentMap);
 
   const topography: TopographyNode = {
-    name: "App",
+    name: "Root",
     children: [],
-    file: appFile,
+    file: mainFile,
     uses: [],
     props: [],
   };
   const visited = new Set<string>();
 
-  function buildTree(nodeName: string, parentNode: TopographyNode) {
+  function buildTree(
+    nodeName: string,
+    parentNode: TopographyNode,
+    componentMap: Map<string, any>,
+    visited: Set<string>,
+  ) {
+    // Skip if node has been visited to prevent cycles
     if (visited.has(nodeName)) return;
     visited.add(nodeName);
 
+    // Get component info from the map
     const componentInfo = componentMap.get(nodeName);
     if (!componentInfo) return;
 
-    componentInfo.routes.forEach((route) => {
+    // Create the current node
+    const currentNode: TopographyNode = {
+      name: nodeName,
+      children: [],
+      file: componentInfo.definedIn,
+      props: componentInfo.props,
+      uses: componentInfo.uses,
+    };
+
+    // Add current node to parent's children (except for the root)
+    if (parentNode.name !== "Root" || nodeName === "App") {
+      parentNode.children.push(currentNode);
+    }
+
+    componentInfo.routes.forEach((route: Route) => {
       const routeNode: TopographyNode = {
         name: `Route: ${route.path}`,
         children: [],
@@ -163,26 +186,33 @@ export default async function generateTopography(
         uses: componentInfo.uses,
       };
       parentNode.children.push(routeNode);
-      buildTree(route.component, routeNode);
+      buildTree(route.component, routeNode, componentMap, visited);
     });
 
-    componentInfo.uses.forEach((comp) => {
+    // Recursively build tree for each used component
+    componentInfo.uses.forEach((comp: string) => {
       if (componentMap.has(comp) && comp !== nodeName) {
-        const childNode: TopographyNode = {
-          name: comp,
-          children: [],
-          file: componentMap.get(comp)!.definedIn,
-          props: componentInfo.props,
-          uses: componentInfo.uses,
-        };
-        parentNode.children.push(childNode);
-        buildTree(comp, childNode);
+        buildTree(comp, currentNode, componentMap, visited);
       }
     });
   }
-
-  if (componentMap.has("App")) {
-    buildTree("App", topography);
+  if (mainFile) {
+    const { usedComponents } = await parseFile(mainFile);
+    console.log("===================================");
+    console.log("===================================");
+    console.log("used:::", usedComponents);
+    // const rootComponent = usedComponents.find((comp) => /^[A-Z]/.test(comp));
+    let rootComponent = usedComponents[0];
+    if (
+      rootComponent.toLowerCase() === "strictmode" ||
+      (rootComponent.toLowerCase().includes("route") &&
+        usedComponents.length > 1)
+    ) {
+      rootComponent = usedComponents[1]; // Skip StrictMode, use next
+    }
+    if (rootComponent) {
+      buildTree(rootComponent, topography, componentMap, visited);
+    }
   }
 
   return topography;
