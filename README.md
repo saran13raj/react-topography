@@ -6,10 +6,12 @@ A CLI tool to generate a topography of React component relationships.
 
 React Topography is a command-line tool that visualizes the component hierarchy and relationships in React applications. It generates an interactive static site displaying a flow from the root of the app to its components, allowing you to explore their connections.
 
+![Topography Sample](docs/raster.png)
+
 ## Installation
 
 ```bash
-npm install -g react-topography
+pnpm install -g react-topography
 ```
 
 ## Usage
@@ -26,14 +28,14 @@ react-topography -s <source-directory>
 
 - If your React code is in the `src` directory:
 
-  ```bash
-  react-topography -s ./src
-  ```
+    ```bash
+    react-topography -s ./src
+    ```
 
 - If your React code is in `packages/demo/src`:
-  ```bash
-  react-topography -s ./packages/demo/src
-  ```
+    ```bash
+    react-topography -s ./packages/demo/src
+    ```
 
 After running the command, the tool spins up a static site at `http://localhost:4001/`. The site displays an interactive visualization of your React app’s component relationships, where you can:
 
@@ -57,7 +59,7 @@ React Topography currently supports React applications created with:
 
 ## Contributing
 
-Feel free to report issues or contribute to the project on [GitHub](https://github.com/your-repo/react-topography). We welcome feedback and improvements!
+Feel free to report issues or contribute to the project on [GitHub](https://github.com/saran13raj/react-topography). We welcome feedback and improvements!
 
 ## License
 
