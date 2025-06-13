@@ -1,7 +1,7 @@
 {
   "name": "react-topography",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "description": "A tool to generate a topography of React component relationships",
   "bin": {
@@ -47,6 +47,6 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-repo/react-mindmap.git"
+    "url": "https://github.com/saran13raj/react-topography.git"
   }
 }
